@@ -164,9 +164,6 @@ const TicketsTab: React.FC = () => {
 
       const response = await fetch('http://localhost:7777/runs?workflow_id=customer-support-resolution-pipeline', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
         body: (() => {
           const formData = new FormData();
           formData.append('workflow_input', query);
@@ -176,6 +173,7 @@ const TicketsTab: React.FC = () => {
 
       if (response.ok) {
         const result = await response.json();
+        console.log('AI Response received:', result);
         const aiResponse = result.content || result.output || 'AI response received but no content available.';
         
         // Update the resolution with the response
@@ -185,7 +183,9 @@ const TicketsTab: React.FC = () => {
             : r
         ));
       } else {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
     } catch (err) {
       console.error('Error getting AI resolution:', err);
