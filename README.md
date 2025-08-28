@@ -22,22 +22,143 @@ A production-ready customer support system that uses AI agents for intelligent t
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │   React UI      │    │   FastAPI        │    │   Agno AI       │
 │   (Frontend)    │◄──▶│   API Layer      │◄──▶│   Agents        │
+│   Port 3000     │    │   Port 7777      │    │   (Workflow)    │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
-                                │                        │
-                                ▼                        ▼
-                       ┌──────────────────┐    ┌─────────────────┐
-                       │   Vector DB      │    │   Ticketing     │
-                       │   (LanceDB)      │    │   Database      │
-                       └──────────────────┘    └─────────────────┘
+         │                                               │
+         │                                               │
+         │                                               ├───▶ OpenAI API
+         │                                               │
+         │                                               └───▶ Vector DB
+         │                                                      (LanceDB)
+         │                        
+         │                       
+         │                                               
+         │                       ┌──────────────────┐    
+         └──────────────────────▶│   FastAPI        │    
+                                 │   Ticketing      │    
+                                 │   API Layer      │    
+                                 │   Port 8000      │    
+                                 └──────────────────┘    
+                                           │
+                                           │
+                                           │
+                                           │
+                                           ▼
+                                  ┌──────────────────┐
+                                  │   SQLite         │
+                                  │   Database       │
+                                  └──────────────────┘
 ```
 
 ### **Layer Breakdown:**
 
-1. **🌐 React Frontend**: Modern web interface with Material-UI
-2. **🚀 FastAPI Backend**: RESTful API endpoints and business logic
-3. **🤖 Agno AI Layer**: Orchestrated AI agents for support resolution
+1. **🌐 React Frontend**: Modern web interface with Material-UI (Port 3000)
+2. **🚀 Main FastAPI Backend**: RESTful API endpoints and business logic (Port 7777)
+3. **🤖 Agno AI Layer**: Orchestrated AI agents with direct access to:
+   - **OpenAI API**: For LLM processing
+   - **Vector Database**: For knowledge base retrieval
 4. **💾 Vector Database**: LanceDB for semantic search and knowledge base
-5. **🎫 Ticketing System**: SQLite database for ticket management
+5. **🎫 Ticketing FastAPI**: Separate API service for ticket management (Port 8000)
+6. **🗄️ SQLite Database**: Persistent storage for tickets and support data
+
+### **Data Flow:**
+
+- **React UI** → **Main FastAPI** (Port 7777) → **Agno AI Agents** → **OpenAI API + Vector DB**
+- **React UI** → **Ticketing FastAPI** (Port 8000) → **SQLite Database**
+- **Parallel Processing**: Both APIs can be called simultaneously for different operations
+
+## 📚 **Knowledge Base Building**
+
+### **Dual Approach: Bash Script + UI**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    KNOWLEDGE BASE BUILDING                      │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+                    ┌─────────────────────┐
+                    │   PDF Documents     │
+                    │   (knowledge_base/) │
+                    └─────────────────────┘
+                                │
+                                ▼
+                    ┌─────────────────────┐
+                    │   Processing        │
+                    │   Methods           │
+                    └─────────────────────┘
+                                │
+                    ┌─────────────────────┐
+                    │                     │
+                    │  ┌─────────────┐    │
+                    │  │   BASH      │    │
+                    │  │  SCRIPT     │    │
+                    │  │             │    │
+                    │  │ python3     │    │
+                    │  │ create_pdfs.py   │
+                    │  │             │    │
+                    │  └─────────────┘    │
+                    │                     │
+                    │  ┌─────────────┐    │
+                    │  │   REACT     │    │
+                    │  │     UI      │    │
+                    │  │             │    │
+                    │  │ Knowledge   │    │
+                    │  │ Base Tab    │    │
+                    │  │             │    │
+                    │  └─────────────┘    │
+                    └─────────────────────┘
+                                │
+                                ▼
+                    ┌─────────────────────┐
+                    │   Vector Database   │
+                    │   (LanceDB)        │
+                    └─────────────────────┘
+                                │
+                                ▼
+                    ┌─────────────────────┐
+                    │   AI Training       │
+                    │   Data Ready        │
+                    └─────────────────────┘
+```
+
+### **Method 1: Bash Script (Automated)**
+```bash
+# Generate PDFs from text files
+python3 create_pdfs.py
+
+# Build knowledge base directly
+python3 rag_solution_developer.py
+```
+
+**Features:**
+- ✅ **Automated Processing**: Batch PDF generation
+- ✅ **Direct Integration**: Immediate vector DB building
+- ✅ **Scriptable**: Can be automated in CI/CD pipelines
+- ✅ **Headless**: No UI required
+
+### **Method 2: React UI (Interactive)**
+```
+React UI → Knowledge Base Tab → Upload PDF → Build KB → View Stats
+```
+
+**Features:**
+- ✅ **Visual Interface**: Drag & drop PDF upload
+- ✅ **Real-time Monitoring**: Live build progress
+- ✅ **Statistics Dashboard**: Vector DB metrics
+- ✅ **User-Friendly**: No command line knowledge required
+- ✅ **File Management**: Organize and manage documents
+
+### **When to Use Each Method:**
+
+| Use Case | Bash Script | React UI |
+|----------|-------------|----------|
+| **Automation** | ✅ Perfect | ❌ Manual |
+| **Batch Processing** | ✅ Excellent | ⚠️ One-by-one |
+| **CI/CD Integration** | ✅ Ideal | ❌ Not suitable |
+| **User Experience** | ❌ Technical | ✅ Excellent |
+| **Real-time Feedback** | ❌ None | ✅ Live updates |
+| **File Management** | ❌ Basic | ✅ Advanced |
 
 ## 🚀 **Quick Start**
 
