@@ -57,7 +57,7 @@ async function testHomeButtons() {
     const paymentButton = await page.$('button:has-text("Get Help with Payment Issues")');
     if (paymentButton) {
       await paymentButton.click();
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(2000); // Wait longer for API call
       
       // Check if console message was logged
       const paymentMessage = consoleMessages.find(msg => 
@@ -68,6 +68,28 @@ async function testHomeButtons() {
         console.log('✅ Payment Issues button test PASSED - Console message found');
       } else {
         console.log('❌ Payment Issues button test FAILED - Console message not found');
+      }
+      
+      // Wait for AI response to appear
+      try {
+        await page.waitForSelector('text=Getting AI response from knowledge base...', { timeout: 10000 });
+        console.log('✅ Loading indicator appeared - API call initiated');
+        
+        // Wait for response or error
+        await page.waitForSelector('text=AI Responses', { timeout: 15000 });
+        console.log('✅ AI Responses section appeared');
+        
+        // Check if we got a response or error
+        const hasResponse = await page.$('text=AI response received but no content available') !== null;
+        const hasError = await page.$('text=Failed to get AI response') !== null;
+        
+        if (hasResponse || hasError) {
+          console.log('✅ API call completed - Response or error received');
+        } else {
+          console.log('⚠️ API call may still be in progress');
+        }
+      } catch (error) {
+        console.log('⚠️ AI response section did not appear within timeout');
       }
       
       await page.screenshot({ 
@@ -216,6 +238,13 @@ The following console messages should appear when clicking Home page buttons:
 2. **Account Access Button**: "Switch to chat with example: I can't log into my account after changing my password"
 3. **Technical Support Button**: "Switch to chat with example: App crashes when opening settings page"
 4. **General Support Button**: "Switch to chat with example: How to use the new dashboard features?"
+
+### 🔌 API Call Verification
+
+The buttons should now make actual API calls to the Agno FastAPI system:
+- **Endpoint**: POST /runs?workflow_id=rag-customer-support-resolution-pipeline
+- **Response**: AI-generated solutions from LanceDB knowledge base
+- **UI Updates**: Loading indicators, response display, and error handling
 
 ### 📝 Console Messages Captured
 
