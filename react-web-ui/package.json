@@ -27,7 +27,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "generate-manual": "node generate-user-manual.js"
+    "generate-manual": "node generate-user-manual.js",
+    "test-home": "node test-home-buttons.js"
   },
   "eslintConfig": {
     "extends": [

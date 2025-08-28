@@ -412,7 +412,7 @@ For technical support or feature requests:
 *This user manual was automatically generated using Playwright automation. Last updated: ${new Date().toLocaleDateString()}*
 `;
 
-  const manualPath = path.join(__dirname, 'USER_MANUAL.md');
+  const manualPath = path.join(__dirname, '..', 'USER_MANUAL.md');
   fs.writeFileSync(manualPath, manual);
   
   console.log(`✅ User manual generated: ${manualPath}`);
