@@ -132,13 +132,17 @@ def customer_support_execution(workflow: Workflow, input_data) -> str:
 
     # Step 1: Query the vector database for relevant knowledge
     log_info(f"🔍 Querying LanceDB vector database...")
+    
+    # Initialize variables outside try block
+    search_results = []
+    knowledge_context = ""
+    
     try:
         # Search for relevant documents in the knowledge base
         search_results = vector_db.search(query, limit=3)
         log_info(f"📚 Found {len(search_results)} relevant documents in knowledge base")
         
         # Extract content from search results
-        knowledge_context = ""
         if search_results:
             for i, result in enumerate(search_results):
                 log_info(f"📄 Document {i+1}: {result.get('title', 'Untitled')} (Score: {result.get('score', 'N/A')})")
@@ -152,6 +156,7 @@ def customer_support_execution(workflow: Workflow, input_data) -> str:
     except Exception as e:
         log_info(f"❌ Error querying vector database: {e}")
         knowledge_context = "Error accessing knowledge base."
+        search_results = []  # Ensure it's an empty list on error
     
     # Step 2: Classify the query
     log_info(f"🏷️ Classifying query with AI agent...")
