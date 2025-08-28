@@ -120,31 +120,85 @@ def customer_support_execution(workflow: Workflow, input_data) -> str:
     else:
         query = str(input_data)
     
-    log_info(f"Processing query: {query}")
+    log_info(f"🚀 === STARTING RAG PROCESSING ===")
+    log_info(f"📝 Query: {query}")
     
     cached_solution = workflow.workflow_session_state.get("solutions", {}).get(query)
     if cached_solution:
-        log_info(f"Cache hit! Returning cached solution for query: {query}")
+        log_info(f"🔄 Cache hit! Returning cached solution for query: {query}")
         return cached_solution
 
-    log_info(f"No cached solution found for query: {query}")
+    log_info(f"🆕 No cached solution found, querying knowledge base...")
 
+    # Step 1: Query the vector database for relevant knowledge
+    log_info(f"🔍 Querying LanceDB vector database...")
+    try:
+        # Search for relevant documents in the knowledge base
+        search_results = vector_db.search(query, limit=3)
+        log_info(f"📚 Found {len(search_results)} relevant documents in knowledge base")
+        
+        # Extract content from search results
+        knowledge_context = ""
+        if search_results:
+            for i, result in enumerate(search_results):
+                log_info(f"📄 Document {i+1}: {result.get('title', 'Untitled')} (Score: {result.get('score', 'N/A')})")
+                knowledge_context += f"\n--- Knowledge Base Document {i+1} ---\n{result.get('content', '')}\n"
+        else:
+            log_info(f"⚠️ No relevant documents found in knowledge base")
+            knowledge_context = "No specific knowledge base documents found for this query."
+        
+        log_info(f"📏 Knowledge context length: {len(knowledge_context)} characters")
+        
+    except Exception as e:
+        log_info(f"❌ Error querying vector database: {e}")
+        knowledge_context = "Error accessing knowledge base."
+    
+    # Step 2: Classify the query
+    log_info(f"🏷️ Classifying query with AI agent...")
     classification_response = triage_agent.run(query)
     classification = classification_response.content
+    log_info(f"✅ Classification: {classification}")
 
+    # Step 3: Generate solution using knowledge base context
+    log_info(f"🤖 Generating solution using knowledge base context...")
     solution_context = f"""
     Customer Query: {query}
 
     Classification: {classification}
 
+    Knowledge Base Context:
+    {knowledge_context}
+
+    Instructions:
     Please provide a clear, step-by-step solution for this customer issue.
     Make sure to format it in a customer-friendly way with clear instructions.
+    
+    IMPORTANT: Base your response on the knowledge base context provided above.
+    If the knowledge base contains relevant information, use it as the primary source.
+    If no relevant knowledge base documents are found, indicate this clearly.
+    
+    Always include a "Knowledge Source" section at the end showing which documents were referenced.
     """
 
     solution_response = support_agent.run(solution_context)
     solution = solution_response.content
+    
+    # Add knowledge base verification to the solution
+    if search_results:
+        kb_reference = "\n\n--- KNOWLEDGE BASE VERIFICATION ---\n"
+        kb_reference += f"This solution was generated using {len(search_results)} relevant documents from your knowledge base:\n"
+        for i, result in enumerate(search_results):
+            kb_reference += f"- Document {i+1}: {result.get('title', 'Untitled')} (Relevance Score: {result.get('score', 'N/A')})\n"
+        kb_reference += f"\nTotal knowledge context used: {len(knowledge_context)} characters"
+        solution += kb_reference
+    else:
+        solution += "\n\n--- KNOWLEDGE BASE VERIFICATION ---\n⚠️ No relevant knowledge base documents found for this query. This response is generated from general AI knowledge."
 
+    log_info(f"💾 Caching solution for future use...")
     cache_solution(workflow, query, solution)
+    
+    log_info(f"🎉 === RAG PROCESSING COMPLETED ===")
+    log_info(f"📊 Solution summary: {len(solution)} characters, {len(search_results) if search_results else 0} KB documents used")
 
     return solution
 

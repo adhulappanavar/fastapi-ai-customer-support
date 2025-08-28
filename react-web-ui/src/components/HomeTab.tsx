@@ -284,13 +284,37 @@ const HomeTab: React.FC = () => {
                     </Alert>
                   )}
                   
-                  {aiResponse.response && !aiResponse.loading && !aiResponse.error && (
-                    <Paper elevation={1} sx={{ p: 2, backgroundColor: '#f8f9fa' }}>
-                      <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-                        {aiResponse.response}
-                      </Typography>
-                    </Paper>
-                  )}
+                              {aiResponse.response && !aiResponse.loading && !aiResponse.error && (
+              <Paper elevation={1} sx={{ p: 2, backgroundColor: '#f8f9fa' }}>
+                <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                  {aiResponse.response}
+                </Typography>
+                
+                {/* Knowledge Base Verification Badge */}
+                {aiResponse.response.includes('KNOWLEDGE BASE VERIFICATION') && (
+                  <Box mt={2} p={1} sx={{ backgroundColor: '#e3f2fd', borderRadius: 1, border: '1px solid #2196f3' }}>
+                    <Typography variant="caption" color="primary" sx={{ fontWeight: 'bold' }}>
+                      🔍 Knowledge Base Verified
+                    </Typography>
+                    <Typography variant="caption" display="block" color="text.secondary">
+                      This response was generated using your knowledge base documents
+                    </Typography>
+                  </Box>
+                )}
+                
+                {/* Generic Response Warning */}
+                {!aiResponse.response.includes('KNOWLEDGE BASE VERIFICATION') && (
+                  <Box mt={2} p={1} sx={{ backgroundColor: '#fff3e0', borderRadius: 1, border: '1px solid #ff9800' }}>
+                    <Typography variant="caption" color="warning.main" sx={{ fontWeight: 'bold' }}>
+                      ⚠️ Generic AI Response
+                    </Typography>
+                    <Typography variant="caption" display="block" color="text.secondary">
+                      This response was generated from general AI knowledge, not your specific knowledge base
+                    </Typography>
+                  </Box>
+                )}
+              </Paper>
+            )}
                 </Collapse>
               </CardContent>
             </Card>
