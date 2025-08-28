@@ -58,7 +58,7 @@ def demo_workflow():
         print("-" * 60)
         
         try:
-            params = {"workflow_id": "customer-support-resolution-pipeline"}
+            params = {"workflow_id": "rag-customer-support-resolution-pipeline"}
             
             response = requests.post(
                 f"{main_api_url}/runs",

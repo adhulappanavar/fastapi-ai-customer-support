@@ -162,7 +162,7 @@ const TicketsTab: React.FC = () => {
       // Prepare the query for AI analysis
       const query = `Ticket: ${ticket.title}\n\nDescription: ${ticket.description}\n\nCategory: ${ticket.category_name}\nPriority: ${ticket.priority_name}\n\nPlease provide a comprehensive solution for this support ticket.`;
 
-      const response = await fetch('http://localhost:7777/runs?workflow_id=customer-support-resolution-pipeline', {
+      const response = await fetch('http://localhost:7777/runs?workflow_id=rag-customer-support-resolution-pipeline', {
         method: 'POST',
         body: (() => {
           const formData = new FormData();

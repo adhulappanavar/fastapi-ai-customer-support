@@ -14,7 +14,7 @@ def test_single_query(query: str):
     print("=" * 60)
     
     try:
-        params = {"workflow_id": "customer-support-resolution-pipeline"}
+        params = {"workflow_id": "rag-customer-support-resolution-pipeline"}
         
         response = requests.post(
             f"{base_url}/runs",
@@ -83,7 +83,7 @@ def test_workflow():
         
         try:
             # Use the correct Agno API structure - workflow_id as query parameter, workflow_input as form data
-            params = {"workflow_id": "customer-support-resolution-pipeline"}
+            params = {"workflow_id": "rag-customer-support-resolution-pipeline"}
             
             response = requests.post(
                 f"{base_url}/runs",
@@ -130,7 +130,7 @@ def test_workflow_status():
     
     try:
         # First create a run
-        params = {"workflow_id": "customer-support-resolution-pipeline"}
+        params = {"workflow_id": "rag-customer-support-resolution-pipeline"}
         
         response = requests.post(f"{base_url}/runs", params=params, data={"workflow_input": "Test query for status check"})
         if response.status_code == 200:

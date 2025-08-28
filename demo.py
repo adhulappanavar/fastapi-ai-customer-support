@@ -50,7 +50,7 @@ def demo_workflow():
     
     print("\n🌐 API Endpoint:")
     print("POST /runs")
-    print("Body: {\"workflow_id\": \"customer-support-resolution-pipeline\", \"input\": {\"query\": \"your customer issue here\"}}")
+    print("Body: {\"workflow_id\": \"rag-customer-support-resolution-pipeline\", \"input\": {\"query\": \"your customer issue here\"}}")
     
     print("\n📚 Interactive Documentation:")
     print("http://localhost:7777/docs (Swagger UI)")

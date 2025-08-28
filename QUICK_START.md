@@ -44,7 +44,7 @@ npm start
 
 ### 4. **Test with curl**
 ```bash
-curl -X POST "http://localhost:7777/runs?workflow_id=customer-support-resolution-pipeline" \
+curl -X POST "http://localhost:7777/runs?workflow_id=rag-customer-support-resolution-pipeline" \
   -F "workflow_input=I cannot log into my account"
 ```
 
@@ -60,7 +60,7 @@ python3 test_workflow.py
 - **React Frontend**: http://localhost:3000
 - **Interactive Docs**: http://localhost:7777/docs
 - **Ticketing Docs**: http://localhost:8000/docs
-- **Workflow Execution**: `POST /runs?workflow_id=customer-support-resolution-pipeline`
+- **Workflow Execution**: `POST /runs?workflow_id=rag-customer-support-resolution-pipeline`
 
 ## 🎯 **What Happens When You Submit a Query**
 

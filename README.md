@@ -250,7 +250,7 @@ Separate service for ticket management:
 
 ### **Main AI Endpoint**
 ```
-POST /runs?workflow_id=customer-support-resolution-pipeline
+POST /runs?workflow_id=rag-customer-support-resolution-pipeline
 Content-Type: multipart/form-data
 
 workflow_input: "Your customer support query here"
@@ -258,7 +258,7 @@ workflow_input: "Your customer support query here"
 
 ### **Example Usage**
 ```bash
-curl -X POST "http://localhost:7777/runs?workflow_id=customer-support-resolution-pipeline" \
+curl -X POST "http://localhost:7777/runs?workflow_id=rag-customer-support-resolution-pipeline" \
      -F "workflow_input=I cannot log into my account"
 ```
 
