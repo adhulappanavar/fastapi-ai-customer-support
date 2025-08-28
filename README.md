@@ -13,6 +13,8 @@ A production-ready customer support system that uses AI agents for intelligent t
 - 🔄 **Agentic Workflows**: Orchestrated AI agent workflows using Agno framework
 - 📊 **Business Intelligence**: SLA tracking, priority scoring, and escalation rules
 - 🛡️ **Production Ready**: Comprehensive error handling, logging, and security
+- 🌐 **Modern Web UI**: React-based interface with AI Chat, Ticket Management, and Knowledge Base
+- 📚 **Knowledge Base Management**: Upload PDFs, build vector databases, and manage AI training data
 
 ## 🏗️ **Architecture**
 
@@ -33,6 +35,7 @@ A production-ready customer support system that uses AI agents for intelligent t
 
 ### **Prerequisites**
 - Python 3.8+
+- Node.js 16+ (for React UI)
 - OpenAI API key
 - Git
 
@@ -53,15 +56,43 @@ nano .env
 
 ### **3. Install Dependencies**
 ```bash
+# Python dependencies
 pip install -r requirements.txt
+
+# React UI dependencies
+cd react-web-ui
+npm install
+cd ..
 ```
 
-### **4. Start the Server**
+### **4. Start the Services**
 ```bash
+# Start FastAPI backend (Terminal 1)
 python3 fastapi_demo.py
+
+# Start React UI (Terminal 2)
+cd react-web-ui
+npm start
 ```
 
-The API will be available at: **http://localhost:7777**
+- **API**: http://localhost:7777
+- **Web UI**: http://localhost:3000
+
+## 🌐 **Web Interface**
+
+### **React-Based UI**
+The system includes a modern React web interface with four main tabs:
+
+- **🏠 Home Tab**: Dashboard with common support scenarios and quick actions
+- **💬 AI Chat Tab**: Interactive chat interface for customer support queries
+- **🎫 Tickets Tab**: Ticket management system with status tracking
+- **📚 Knowledge Base Tab**: Document management and vector database building
+
+### **Features**
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
+- **Real-time Updates**: Live status updates and notifications
+- **File Upload**: Drag-and-drop PDF upload for knowledge base
+- **Modern UI**: Material-UI components with consistent design language
 
 ## 📖 **API Documentation**
 
@@ -143,7 +174,15 @@ fastapi-ai-customer-support/
 ├── 📖 README.md                   # This file
 ├── 📚 DATA_DRIVEN_SETUP.md       # Setup guide
 ├── 🔄 HARDCODED_VS_DATADRIVEN.md # Comparison document
-└── 📊 solution_document.md        # System architecture
+├── 📊 solution_document.md        # System architecture
+├── 🌐 react-web-ui/              # React-based web interface
+│   ├── src/components/           # UI components
+│   │   ├── HomeTab.tsx          # Home dashboard
+│   │   ├── ChatTab.tsx          # AI chat interface
+│   │   ├── TicketsTab.tsx       # Ticket management
+│   │   └── KnowledgeBaseTab.tsx # Knowledge base management
+│   └── package.json             # Node.js dependencies
+└── 📚 knowledge_base/            # PDF documents for AI training
 ```
 
 ## 🎯 **Use Cases**
@@ -153,6 +192,8 @@ fastapi-ai-customer-support/
 - **SaaS Companies**: Technical support and onboarding
 - **Enterprise**: Internal IT support and help desk
 - **Startups**: Scalable customer support without hiring
+- **Knowledge Management**: Centralized document management and AI training
+- **Self-Service Support**: AI-powered chat interface for instant help
 
 ## 🚀 **Advanced Features**
 
@@ -194,6 +235,12 @@ fastapi-ai-customer-support/
 3. Restart service
 4. New templates available
 
+### **Knowledge Base Management**
+1. Upload PDF documents via web interface
+2. Build vector database for AI training
+3. Monitor database statistics and performance
+4. Manage document versions and updates
+
 ## 🧪 **Testing**
 
 ### **Run Test Suite**
@@ -210,6 +257,16 @@ python3 test_workflow.py
 ### **Validate Configuration**
 ```bash
 python3 -c "import yaml; yaml.safe_load(open('config/categories.yaml'))"
+```
+
+### **Test Web Interface**
+```bash
+# Start the React UI
+cd react-web-ui
+npm start
+
+# Open http://localhost:3000 in your browser
+# Test all tabs: Home, AI Chat, Tickets, Knowledge Base
 ```
 
 ## 🚨 **Security & Best Practices**

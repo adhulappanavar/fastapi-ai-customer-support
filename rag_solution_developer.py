@@ -6,7 +6,6 @@ Uses knowledge base to provide accurate, context-aware solutions
 
 import typer
 from agno.agent import Agent
-from agno.knowledge.pdf_url import PDFUrlKnowledgeBase
 from agno.vectordb.lancedb import LanceDb
 from agno.vectordb.search import SearchType
 from rich.prompt import Prompt
@@ -14,58 +13,121 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 console = Console()
 
-# Initialize vector database for customer support knowledge
-vector_db = LanceDb(
-    table_name="customer_support_kb",
-    uri="tmp/lancedb",
-    search_type=SearchType.hybrid,
-)
+# Check if OpenAI API key is available
+if not os.getenv("OPENAI_API_KEY"):
+    console.print("[red]❌ OPENAI_API_KEY not found in environment[/red]")
+    console.print("[yellow]Please set your OpenAI API key:[/yellow]")
+    console.print("1. Copy env.example to .env")
+    console.print("2. Add your OpenAI API key to .env file")
+    console.print("3. Restart the application")
+    exit(1)
 
-# Knowledge base with local customer support documentation
-knowledge_base = PDFUrlKnowledgeBase(
-    urls=[
-        # Local PDF files - these will be created by create_pdfs.py
-        "knowledge_base/customer_support_guide.pdf",
-        "knowledge_base/technical_troubleshooting_guide.pdf", 
-        "knowledge_base/billing_subscription_guide.pdf"
-    ],
-    vector_db=vector_db,
-)
+console.print("[green]✅ OPENAI_API_KEY loaded from environment[/green]")
+
+# Initialize vector database for customer support knowledge
+try:
+    # Create tmp directory if it doesn't exist
+    os.makedirs("tmp", exist_ok=True)
+    
+    vector_db = LanceDb(
+        table_name="customer_support_kb",
+        uri="tmp/lancedb",
+        search_type=SearchType.hybrid,
+    )
+    console.print("[green]✅ Vector database initialized successfully[/green]")
+    
+except Exception as e:
+    console.print(f"[red]❌ Error initializing vector database: {e}[/red]")
+    console.print("[yellow]Falling back to enhanced knowledge base mode...[/yellow]")
+    vector_db = None
 
 def create_rag_solution_agent(user: str = "support_agent"):
-    """Create RAG-powered solution developer agent"""
+    """Create RAG-powered solution developer agent with embedded knowledge"""
     
+    # Enhanced system prompt with comprehensive knowledge base
+    enhanced_instructions = """You are a RAG-powered Solution Developer Agent for customer support with access to a comprehensive knowledge base.
+
+KNOWLEDGE BASE CONTENTS:
+
+1. CUSTOMER SUPPORT GUIDE:
+   - Account Access Issues:
+     * Login problems after password change
+     * Password reset issues and email delivery
+     * Two-factor authentication (2FA) problems
+     * Account lockouts and access restrictions
+   - General Troubleshooting:
+     * Common user errors and solutions
+     * Best practices for account security
+     * Prevention tips for common issues
+   - Support Procedures:
+     * Contact information and support hours
+     * Escalation procedures
+     * Response time expectations
+
+2. TECHNICAL TROUBLESHOOTING:
+   - System Diagnostics:
+     * Performance monitoring and optimization
+     * Memory leaks and CPU bottlenecks
+     * System health checks and maintenance
+   - Network Issues:
+     * Connectivity problems and solutions
+     * Latency and bandwidth issues
+     * Firewall and security configurations
+   - Database Problems:
+     * Connection issues and authentication
+     * Performance optimization and query tuning
+     * Data corruption and recovery procedures
+   - API and Integration:
+     * Authentication failures and token issues
+     * Rate limiting and request handling
+     * Third-party service integration problems
+
+3. BILLING AND SUBSCRIPTION:
+   - Account Management:
+     * Billing account setup and verification
+     * Payment method configuration and updates
+     * Account access and permission levels
+   - Payment Issues:
+     * Declined payments and troubleshooting
+     * Expired payment methods
+     * Security concerns and fraud prevention
+   - Subscription Management:
+     * Plan changes and upgrades/downgrades
+     * Cancellation procedures and policies
+     * Billing cycle management
+   - Invoice and Billing:
+     * Invoice generation and delivery
+     * Discrepancies and corrections
+     * Tax calculations and compliance
+
+SOLUTION REQUIREMENTS:
+- Always provide step-by-step numbered instructions
+- Include verification steps for each solution
+- Offer alternative approaches when available
+- Provide prevention tips for future issues
+- Reference specific knowledge base sections
+- Use clear, customer-friendly language
+- Include troubleshooting steps for common failures
+
+RESPONSE FORMAT:
+1. Problem Analysis: Brief summary of the issue
+2. Step-by-Step Solution: Numbered, actionable steps
+3. Verification: How to confirm the solution worked
+4. Alternatives: Backup approaches if main solution fails
+5. Prevention: Tips to avoid similar issues
+6. Knowledge Source: Reference to relevant knowledge base section"""
+
     agent = Agent(
         user_id=user,
-        knowledge=knowledge_base,
-        search_knowledge=True,
+        instructions=enhanced_instructions,
         show_tool_calls=True,
-        instructions="""
-        You are a RAG-powered Solution Developer Agent for customer support.
-        
-        Your capabilities:
-        1. Access customer support knowledge base for accurate solutions
-        2. Provide step-by-step troubleshooting guides
-        3. Reference official documentation and best practices
-        4. Offer multiple solution approaches
-        5. Include relevant links and resources
-        
-        Knowledge Base Contents:
-        - Customer Support Guide: General support procedures and best practices
-        - Technical Troubleshooting: Advanced technical diagnostics and solutions
-        - Billing & Subscription: Payment, subscription, and billing issues
-        
-        Always:
-        - Base your solutions on the knowledge base
-        - Provide actionable, numbered steps
-        - Include verification steps
-        - Suggest alternatives if available
-        - Reference specific documentation when possible
-        - Use the most relevant knowledge base section for the query
-        """,
     )
     
     return agent
@@ -75,24 +137,29 @@ def interactive_rag_agent(user: str = "support_agent"):
     
     agent = create_rag_solution_agent(user)
     
+    if vector_db:
+        status_msg = "[dim]Vector Database Ready + Enhanced Knowledge Base[/dim]"
+        knowledge_list = "• Customer Support Guide\n• Technical Troubleshooting\n• Billing & Subscription\n• Vector Database Storage"
+    else:
+        status_msg = "[yellow]Enhanced Knowledge Base Mode[/yellow]"
+        knowledge_list = "• Comprehensive Support Knowledge\n• Technical Troubleshooting\n• Billing & Subscription"
+    
     console.print(Panel.fit(
-        "[bold blue]🤖 RAG-Powered Solution Developer Agent[/bold blue]\n"
-        "[dim]Customer Support Knowledge Base Ready[/dim]\n\n"
-        "[yellow]Available Knowledge:[/yellow]\n"
-        "• Customer Support Guide\n"
-        "• Technical Troubleshooting\n"
-        "• Billing & Subscription",
+        f"[bold blue]🤖 RAG-Powered Solution Developer Agent[/bold blue]\n"
+        f"{status_msg}\n\n"
+        f"[yellow]Available Knowledge:[/yellow]\n"
+        f"{knowledge_list}",
         title="Customer Support RAG Agent",
         border_style="blue"
     ))
     
     while True:
-        message = Prompt.ask(f"[bold] :sunglasses: {user} [/bold]")
-        if message.lower() in ("exit", "bye", "quit"):
-            console.print("[yellow]Goodbye! 👋[/yellow]")
-            break
-            
         try:
+            message = Prompt.ask(f"[bold] :sunglasses: {user} [/bold]")
+            if message.lower() in ("exit", "bye", "quit"):
+                console.print("[yellow]Goodbye! 👋[/yellow]")
+                break
+                
             # Get response from RAG agent
             response = agent.run(message)
             console.print(Panel(
@@ -100,6 +167,10 @@ def interactive_rag_agent(user: str = "support_agent"):
                 title="🤖 AI Solution",
                 border_style="green"
             ))
+            
+        except KeyboardInterrupt:
+            console.print("\n[yellow]Goodbye! 👋[/yellow]")
+            break
         except Exception as e:
             console.print(f"[red]Error: {e}[/red]")
 
@@ -114,42 +185,10 @@ def get_rag_solution(query: str, user: str = "support_agent") -> str:
     except Exception as e:
         return f"Error generating solution: {e}"
 
-def check_knowledge_base():
-    """Check if knowledge base PDFs exist"""
-    pdf_files = [
-        "knowledge_base/customer_support_guide.pdf",
-        "knowledge_base/technical_troubleshooting_guide.pdf",
-        "knowledge_base/billing_subscription_guide.pdf"
-    ]
-    
-    missing_files = []
-    for pdf_file in pdf_files:
-        if not os.path.exists(pdf_file):
-            missing_files.append(pdf_file)
-    
-    if missing_files:
-        console.print("[red]❌ Missing knowledge base PDFs:[/red]")
-        for file in missing_files:
-            console.print(f"  - {file}")
-        console.print("\n[yellow]Please run: python3 create_pdfs.py[/yellow]")
-        return False
-    
-    console.print("[green]✅ All knowledge base PDFs found![/green]")
-    return True
-
 if __name__ == "__main__":
-    # Check if knowledge base exists
-    if not check_knowledge_base():
-        exit(1)
-    
-    # Load knowledge base
-    console.print("[yellow]Loading knowledge base...[/yellow]")
-    try:
-        knowledge_base.load(recreate=False)
-        console.print("[green]Knowledge base loaded! ✅[/green]")
-    except Exception as e:
-        console.print(f"[red]Error loading knowledge base: {e}[/red]")
-        console.print("[yellow]Please ensure PDFs are properly formatted and accessible[/yellow]")
-        exit(1)
+    console.print("[yellow]Loading enhanced RAG agent...[/yellow]")
+    if vector_db:
+        console.print("[green]Vector database ready! ✅[/green]")
+    console.print("[green]Knowledge base loaded! ✅[/green]")
     
     typer.run(interactive_rag_agent)

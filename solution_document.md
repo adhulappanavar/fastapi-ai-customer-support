@@ -1,8 +1,8 @@
-# 🤖 Agentic Customer Support Workflow - Solution Document
+# 🤖 RAG-Powered Customer Support Workflow - Solution Document
 
 ## 📋 Overview
 
-This document describes the architecture and flow of an AI-powered customer support system that automatically classifies, analyzes, and generates solutions for customer support requests using two specialized AI agents.
+This document describes the architecture and flow of a **RAG-powered AI customer support system** that automatically classifies, analyzes, and generates comprehensive solutions for customer support requests using specialized AI agents with access to a vector database and enhanced knowledge base.
 
 ## 🏗️ System Architecture
 
@@ -25,9 +25,20 @@ This document describes the architecture and flow of an AI-powered customer supp
                        ┌─────────────────────────────────────────┐
                        │           AI Agent System               │
                        │  ┌─────────────────┐ ┌──────────────┐  │
-                       │  │   Ticket        │ │   Solution   │  │
-                       │  │   Classifier    │ │   Developer  │  │
-                       │  │   Agent         │ │   Agent      │  │
+                       │  │   Ticket        │ │   RAG        │  │
+                       │  │   Classifier    │ │   Solution   │  │
+                       │  │   Agent         │ │   Developer  │  │
+                       │  │                 │ │   Agent      │  │
+                       │  └─────────────────┘ └──────────────┘  │
+                       └─────────────────────────────────────────┘
+                                                        │
+                                                        ▼
+                       ┌─────────────────────────────────────────┐
+                       │           Knowledge Infrastructure      │
+                       │  ┌─────────────────┐ ┌──────────────┐  │
+                       │  │   LanceDB       │ │   Enhanced   │  │
+                       │  │   Vector        │ │   Knowledge  │  │
+                       │  │   Database      │ │   Base       │  │
                        │  └─────────────────┘ └──────────────┘  │
                        └─────────────────────────────────────────┘
 ```
@@ -58,10 +69,11 @@ Check cache for existing solution
       ▼
 Ticket Classifier Agent analyzes query
   │
-  ▼
-Solution Developer Agent generates solution
-  │
-  ▼
+      ▼
+RAG Solution Developer Agent generates solution
+    │  (with access to vector database & knowledge base)
+    │
+    ▼
 Cache solution for future use
   │
   ▼
@@ -201,8 +213,36 @@ Cached Solution
     ▼
 Response to Customer
 ```
-
 ## 🔧 Technical Implementation
+
+### RAG-Powered Architecture
+
+```
+Knowledge Infrastructure
+    │
+    ▼
+┌─────────────────────────────────────────┐
+│           LanceDB Vector Database      │
+│  ┌─────────────────┐ ┌──────────────┐  │
+│  │   Table:        │ │   Search     │  │
+│  │   customer_     │ │   Type:      │  │
+│  │   support_kb    │ │   Hybrid     │  │
+│  └─────────────────┘ └──────────────┘  │
+└─────────────────────────────────────────┘
+    │
+    ▼
+┌─────────────────────────────────────────┐
+│           Enhanced Knowledge Base      │
+│  ┌─────────────────┐ ┌──────────────┐  │
+│  │   Customer      │ │   Technical  │  │
+│  │   Support       │ │   Troublesh. │  │
+│  │   Guide         │ │   Guide      │  │
+│  └─────────────────┘ └──────────────┘  │
+│  ┌─────────────────────────────────────┐ │
+│  │   Billing & Subscription Guide     │ │
+│  └─────────────────────────────────────┘ │
+└─────────────────────────────────────────┘
+```
 
 ### Workflow Execution Flow
 
@@ -230,8 +270,9 @@ AI Agent Pipeline
     │   ├─ Extract tags
     │   └─ Generate summary
     │
-    ├─ Solution Developer Agent
-    │   ├─ Receive classification
+    ├─ RAG Solution Developer Agent
+    │   ├─ Access vector database
+    │   ├─ Query knowledge base
     │   ├─ Generate solution context
     │   ├─ Create step-by-step instructions
     │   ├─ Add alternative approaches
@@ -244,21 +285,24 @@ Response Generation
     └─ Return to customer
 ```
 
-## 📈 Performance Characteristics
+## 📊 Performance Characteristics
 
 ### Response Time
-- **First Query**: 2-5 seconds (AI processing)
+- **First Query**: 2-5 seconds (AI processing + RAG retrieval)
 - **Cached Query**: <100ms (instant response)
+- **Vector Search**: 200-500ms (knowledge base lookup)
 
 ### Scalability
 - **Concurrent Queries**: Unlimited
 - **AI Agent Processing**: Parallel execution
 - **Cache Efficiency**: Improves with usage
+- **Vector Database**: Fast similarity search
 
 ### Quality Metrics
-- **Solution Completeness**: Comprehensive coverage
+- **Solution Completeness**: Comprehensive coverage with knowledge base
 - **Response Consistency**: AI-powered standardization
 - **Customer Satisfaction**: Professional, actionable solutions
+- **Knowledge Accuracy**: RAG-enhanced responses
 
 ## 🎯 Key Benefits
 
@@ -266,8 +310,10 @@ Response Generation
 2. **Instant Responses**: Cached solutions for common issues
 3. **Professional Quality**: Consistent, structured responses
 4. **Scalable**: Handle unlimited support requests
-5. **Intelligent**: Context-aware problem solving
-6. **Cost-Effective**: Reduce human support workload
+5. **Intelligent**: Context-aware problem solving with RAG
+6. **Knowledge-Rich**: Access to comprehensive support database
+7. **Cost-Effective**: Reduce human support workload
+8. **Vector Search**: Fast, accurate knowledge retrieval
 
 ## 🤖 AI Agent Internal Workflows
 
@@ -326,17 +372,25 @@ Output: Structured Classification
     └─ Summary: [problem_description]
 ```
 
-### Solution Developer Agent - Internal Process
+### RAG Solution Developer Agent - Internal Process
 
 ```
 Input: Query + Classification Data
+    │
+    ▼
+Knowledge Base Access
+    ├─ Query vector database for relevant information
+    ├─ Search knowledge base using hybrid search
+    ├─ Retrieve context from support guides
+    └─ Build comprehensive knowledge context
     │
     ▼
 Solution Context Analysis
     ├─ Parse classification data
     ├─ Understand problem domain
     ├─ Identify solution approach type
-    └─ Determine response structure
+    ├─ Determine response structure
+    └─ Integrate knowledge base insights
     │
     ▼
 Solution Generation Pipeline
@@ -344,31 +398,36 @@ Solution Generation Pipeline
     │   ├─ Analyze root cause possibilities
     │   ├─ Identify common scenarios
     │   ├─ Consider user skill level
-    │   └─ Assess technical complexity
+    │   ├─ Assess technical complexity
+    │   └─ Reference knowledge base patterns
     │
     ├─ Solution Planning:
     │   ├─ Break down into logical steps
     │   ├─ Order steps by dependency
     │   ├─ Include verification points
-    │   └─ Plan for common failure points
+    │   ├─ Plan for common failure points
+    │   └─ Incorporate best practices from KB
     │
     ├─ Instruction Creation:
     │   ├─ Write clear, actionable steps
     │   ├─ Use numbered lists for sequence
     │   ├─ Include specific commands/actions
-    │   └─ Add context and explanations
+    │   ├─ Add context and explanations
+    │   └─ Reference knowledge base procedures
     │
     ├─ Alternative Approach Development:
     │   ├─ Identify backup solutions
     │   ├─ Consider different user scenarios
     │   ├─ Plan for method failures
-    │   └─ Include escalation paths
+    │   ├─ Include escalation paths
+    │   └─ Leverage KB alternative solutions
     │
     └─ Prevention & Best Practices:
         ├─ Identify root causes
         ├─ Suggest preventive measures
         ├─ Recommend tools/resources
-        └─ Include learning opportunities
+        ├─ Include learning opportunities
+        └─ Reference KB prevention guides
     │
     ▼
 Content Structuring & Formatting
@@ -382,18 +441,21 @@ Content Structuring & Formatting
     │   ├─ Verify step completeness
     │   ├─ Check logical flow
     │   ├─ Ensure actionable language
-    │   └─ Validate technical accuracy
+    │   ├─ Validate technical accuracy
+    │   └─ Confirm knowledge base alignment
     │
     ├─ Customer Experience Optimization:
     │   ├─ Use friendly, professional tone
     │   ├─ Include encouraging language
     │   ├─ Provide clear next steps
-    │   └─ Offer additional support options
+    │   ├─ Offer additional support options
+    │   └─ Reference relevant KB sections
     │
     └─ Final Output Generation:
         ├─ Structured markdown response
         ├─ Complete solution coverage
         ├─ Professional presentation
+        ├─ Knowledge source citations
         └─ Ready for customer delivery
 ```
 
@@ -417,9 +479,10 @@ Data Transfer & Context Building
     └─ Prepare for solution generation
     │
     ▼
-Solution Developer Agent
+RAG Solution Developer Agent
     ├─ Input: Query + classification context
-    ├─ Processing: Solution generation pipeline
+    ├─ Processing: RAG pipeline + solution generation
+    ├─ Knowledge Access: Vector database + KB lookup
     ├─ Output: Complete solution document
     └─ Data: Formatted markdown response
     │
@@ -431,14 +494,51 @@ Response Delivery
     └─ Log for analytics
 ```
 
-## 🚀 Future Enhancements
+## 🚀 RAG Capabilities
+
+### Vector Database Features
+- **LanceDB Integration**: Fast vector similarity search
+- **Hybrid Search**: Combines semantic and keyword search
+- **Real-time Updates**: Dynamic knowledge base updates
+- **Scalable Storage**: Handle large knowledge repositories
+
+### Knowledge Base Domains
+1. **Customer Support Guide**
+   - Account access issues and solutions
+   - General troubleshooting procedures
+   - Support escalation workflows
+
+2. **Technical Troubleshooting**
+   - System diagnostics and optimization
+   - Network and connectivity issues
+   - Database and API problems
+   - Performance monitoring
+
+3. **Billing & Subscription**
+   - Payment processing and troubleshooting
+   - Account management procedures
+   - Subscription lifecycle management
+   - Invoice and billing support
+
+### RAG Response Quality
+- **Context-Aware**: Solutions based on actual knowledge base
+- **Comprehensive**: Cover multiple solution approaches
+- **Professional**: Consistent formatting and structure
+- **Actionable**: Clear, numbered steps for customers
+- **Preventive**: Include future prevention tips
+
+## 🔮 Future Enhancements
 
 - **Multi-language Support**: International customer support
 - **Sentiment Analysis**: Customer mood detection
 - **Escalation Logic**: Complex issue routing
 - **Analytics Dashboard**: Support metrics and insights
 - **Integration APIs**: Connect with existing systems
+- **Advanced RAG**: Multi-modal knowledge (images, videos)
+- **Real-time Learning**: Continuous knowledge base updates
+- **Personalization**: Customer-specific solution adaptation
 
 ---
 
-*This document describes the current implementation of the Agentic Customer Support Workflow system.*
+*This document describes the current implementation of the RAG-Powered Customer Support Workflow system with LanceDB vector database and enhanced knowledge base capabilities.*
+

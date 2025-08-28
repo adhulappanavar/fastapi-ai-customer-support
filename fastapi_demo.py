@@ -5,6 +5,8 @@ from agno.utils.log import log_info
 from agno.workflow.v2 import Workflow
 from dotenv import load_dotenv
 import os
+from agno.vectordb.lancedb import LanceDb
+from agno.vectordb.search import SearchType
 
 # Load environment variables from .env file
 load_dotenv()
@@ -16,25 +18,64 @@ if not os.getenv("OPENAI_API_KEY"):
 else:
     print("✅ OPENAI_API_KEY loaded from .env file")
 
+# Initialize vector database for RAG capabilities
+try:
+    os.makedirs("tmp", exist_ok=True)
+    vector_db = LanceDb(
+        table_name="customer_support_kb",
+        uri="tmp/lancedb",
+        search_type=SearchType.hybrid,
+    )
+    print("✅ Vector database initialized successfully")
+except Exception as e:
+    print(f"❌ Error initializing vector database: {e}")
+    vector_db = None
+
 agent_storage_file: str = "tmp/agents.db"
 
 # Define agents
 support_agent = Agent(
-    name="Solution Developer",
+    name="RAG-Powered Solution Developer",
     model=OpenAIChat(id="gpt-4o"),
     instructions="""
-        You are a solution developer for customer support. Your job is to create clear,
-        step-by-step solutions for customer issues.
+    You are a RAG-powered Solution Developer Agent for customer support with access to a comprehensive knowledge base.
 
-        Based on research and knowledge base information, create:
-        1. Clear problem diagnosis
-        2. Step-by-step solution instructions
-        3. Alternative approaches if the main solution fails
-        4. Prevention tips for the future
+    KNOWLEDGE BASE CONTENTS:
 
-        Make solutions customer-friendly with numbered steps and clear language.
-        Include any relevant screenshots, links, or additional resources.
-        """,
+    1. CUSTOMER SUPPORT GUIDE:
+       - Account Access Issues: Login problems, password resets, 2FA, account lockouts
+       - General Troubleshooting: Common errors, security best practices, prevention tips
+       - Support Procedures: Contact info, escalation, response times
+
+    2. TECHNICAL TROUBLESHOOTING:
+       - System Diagnostics: Performance, memory, CPU, health checks
+       - Network Issues: Connectivity, latency, firewall, security
+       - Database Problems: Connections, performance, corruption, recovery
+       - API and Integration: Authentication, rate limiting, third-party services
+
+    3. BILLING AND SUBSCRIPTION:
+       - Account Management: Setup, verification, permissions
+       - Payment Issues: Declined payments, expired methods, fraud prevention
+       - Subscription Management: Plan changes, cancellations, billing cycles
+       - Invoice and Billing: Generation, discrepancies, tax compliance
+
+    SOLUTION REQUIREMENTS:
+    - Always provide step-by-step numbered instructions
+    - Include verification steps for each solution
+    - Offer alternative approaches when available
+    - Provide prevention tips for future issues
+    - Reference specific knowledge base sections
+    - Use clear, customer-friendly language
+    - Include troubleshooting steps for common failures
+
+    RESPONSE FORMAT:
+    1. Problem Analysis: Brief summary of the issue
+    2. Step-by-Step Solution: Numbered, actionable steps
+    3. Verification: How to confirm the solution worked
+    4. Alternatives: Backup approaches if main solution fails
+    5. Prevention: Tips to avoid similar issues
+    6. Knowledge Source: Reference to relevant knowledge base section
+    """,
     markdown=True,
 )
 
@@ -110,9 +151,9 @@ def customer_support_execution(workflow: Workflow, input_data) -> str:
 
 # Create the customer support workflow
 customer_support_workflow = Workflow(
-    workflow_id="customer-support-resolution-pipeline",
-    name="Customer Support Resolution Pipeline",
-    description="AI-powered customer support with intelligent caching",
+    workflow_id="rag-customer-support-resolution-pipeline",
+    name="RAG-Powered Customer Support Resolution Pipeline",
+    description="AI-powered customer support with RAG knowledge base and intelligent caching",
     steps=customer_support_execution,
     workflow_session_state={},  # Initialize empty session state
 )
