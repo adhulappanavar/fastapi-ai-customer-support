@@ -56,7 +56,7 @@ npm start
 
 The Home tab provides an overview of the system and quick access to key features.
 
-![Home Tab](screenshots/01-home-tab.png)
+![Home Tab](react-web-ui/screenshots/01-home-tab.png)
 
 **Features:**
 - System overview and welcome message
@@ -67,7 +67,7 @@ The Home tab provides an overview of the system and quick access to key features
 
 The AI Chat tab allows users to interact directly with the AI support system.
 
-![AI Chat Tab](screenshots/02-ai-chat-tab.png)
+![AI Chat Tab](react-web-ui/screenshots/02-ai-chat-tab.png)
 
 **How to Use:**
 1. Type your support query in the input field
@@ -85,7 +85,7 @@ The AI Chat tab allows users to interact directly with the AI support system.
 
 The Tickets tab provides comprehensive ticket management capabilities.
 
-![Tickets Tab](screenshots/03-tickets-tab.png)
+![Tickets Tab](react-web-ui/screenshots/03-tickets-tab.png)
 
 **Features:**
 - **Search & Filter**: Find tickets by status, priority, or category
@@ -104,7 +104,7 @@ The Tickets tab provides comprehensive ticket management capabilities.
 
 The AI Resolution feature automatically generates comprehensive solutions for support tickets.
 
-![AI Resolution Feature](screenshots/04-ai-resolution-feature.png)
+![AI Resolution Feature](react-web-ui/screenshots/04-ai-resolution-feature.png)
 
 **How to Use:**
 1. Navigate to the Tickets tab
@@ -123,7 +123,7 @@ The AI Resolution feature automatically generates comprehensive solutions for su
 
 The Knowledge Base tab allows administrators to manage the system's knowledge base.
 
-![Knowledge Base Tab](screenshots/05-knowledge-base-tab.png)
+![Knowledge Base Tab](react-web-ui/screenshots/05-knowledge-base-tab.png)
 
 **Features:**
 - **PDF Management**: Upload and manage PDF documents
@@ -132,7 +132,7 @@ The Knowledge Base tab allows administrators to manage the system's knowledge ba
 - **Document List**: Browse all uploaded knowledge base documents
 
 ### Uploading PDFs
-![Knowledge Base Upload](screenshots/06-knowledge-base-upload.png)
+![Knowledge Base Upload](react-web-ui/screenshots/06-knowledge-base-upload.png)
 
 **Steps:**
 1. Click "Choose File" to select a PDF
@@ -141,7 +141,7 @@ The Knowledge Base tab allows administrators to manage the system's knowledge ba
 4. The PDF will appear in the documents list
 
 ### Building Knowledge Base
-![Knowledge Base Build](screenshots/07-knowledge-base-build.png)
+![Knowledge Base Build](react-web-ui/screenshots/07-knowledge-base-build.png)
 
 **Steps:**
 1. Upload all necessary PDF documents
@@ -153,7 +153,7 @@ The Knowledge Base tab allows administrators to manage the system's knowledge ba
 
 The system is designed to work seamlessly across all device sizes.
 
-![Responsive Mobile](screenshots/08-responsive-mobile.png)
+![Responsive Mobile](react-web-ui/screenshots/08-responsive-mobile.png)
 
 **Responsive Features:**
 - **Desktop**: Full-featured interface with side-by-side layouts
