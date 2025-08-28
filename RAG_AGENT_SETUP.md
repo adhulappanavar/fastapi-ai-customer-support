@@ -11,7 +11,13 @@
 
 ### **1. Install Dependencies**
 ```bash
+# Python dependencies
 pip install -r requirements.txt
+
+# React frontend dependencies
+cd react-web-ui
+npm install
+cd ..
 ```
 
 ### **2. Create Knowledge Base PDFs**
@@ -19,7 +25,21 @@ pip install -r requirements.txt
 python3 create_pdfs.py
 ```
 
-### **3. Test RAG Agent**
+### **3. Start All Services**
+```bash
+# Terminal 1: Main API server
+python3 fastapi_demo.py
+
+# Terminal 2: Ticketing API server
+cd ticketing_tool
+python3 main.py
+
+# Terminal 3: React frontend
+cd react-web-ui
+npm start
+```
+
+### **4. Test RAG Agent**
 ```bash
 python3 rag_solution_developer.py
 ```

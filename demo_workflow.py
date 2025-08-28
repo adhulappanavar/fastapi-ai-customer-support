@@ -10,7 +10,9 @@ import time
 def demo_workflow():
     """Demonstrate the AI workflow with sample queries"""
     
-    base_url = "http://localhost:7777"
+    main_api_url = "http://localhost:7777"
+    ticketing_api_url = "http://localhost:8000"
+    frontend_url = "http://localhost:3000"
     
     # Sample queries to demonstrate different capabilities
     demo_queries = [
@@ -21,20 +23,32 @@ def demo_workflow():
     
     print("🤖 Agentic Customer Support Workflow Demo")
     print("=" * 60)
-    print(f"Server: {base_url}")
+    print(f"Main API: {main_api_url}")
+    print(f"Ticketing API: {ticketing_api_url}")
+    print(f"Frontend: {frontend_url}")
     print("=" * 60)
     
     # Check system status
     try:
-        status_response = requests.get(f"{base_url}/status")
+        status_response = requests.get(f"{main_api_url}/status")
         if status_response.status_code == 200:
-            print("✅ System Status: Available")
+            print("✅ Main API Status: Available")
         else:
-            print(f"❌ System Status Error: {status_response.status_code}")
+            print(f"❌ Main API Status Error: {status_response.status_code}")
             return
     except Exception as e:
-        print(f"❌ Connection Error: {e}")
+        print(f"❌ Main API Connection Error: {e}")
         return
+    
+    # Check ticketing API status
+    try:
+        ticketing_response = requests.get(f"{ticketing_api_url}/health")
+        if ticketing_response.status_code == 200:
+            print("✅ Ticketing API Status: Available")
+        else:
+            print(f"⚠️  Ticketing API Status: {ticketing_response.status_code}")
+    except Exception as e:
+        print(f"⚠️  Ticketing API Connection: {e}")
     
     print("\n🚀 Testing AI Workflow with Sample Queries:")
     print("=" * 60)
@@ -47,7 +61,7 @@ def demo_workflow():
             params = {"workflow_id": "customer-support-resolution-pipeline"}
             
             response = requests.post(
-                f"{base_url}/runs",
+                f"{main_api_url}/runs",
                 params=params,
                 data={"workflow_input": query}
             )
@@ -97,7 +111,10 @@ def demo_workflow():
     print("✅ Different solution types for different queries")
     print("✅ Scalable workflow automation")
     
-    print(f"\n🌐 Interactive API Documentation: {base_url}/docs")
+    print(f"\n🌐 Interactive API Documentation:")
+    print(f"   Main API: {main_api_url}/docs")
+    print(f"   Ticketing API: {ticketing_api_url}/docs")
+    print(f"   Frontend: {frontend_url}")
     print("🚀 Your AI workflow is ready for production use!")
 
 if __name__ == "__main__":

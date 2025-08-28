@@ -58,10 +58,14 @@
 ## 🔧 **Technical Architecture**
 
 ```
-Customer Query → API → Workflow Engine → AI Agents → Response
-     ↓              ↓         ↓           ↓         ↓
-  Support    FastAPI   Agno    GPT-4o   Structured
-  Request    Server   Workflow  Models   Solution
+React UI → FastAPI API → Agno Workflow → AI Agents → Response
+    ↓           ↓           ↓           ↓         ↓
+  Frontend   Backend    Workflow    GPT-4o   Structured
+  Interface   Server     Engine     Models   Solution
+                ↓
+            Ticketing API
+                ↓
+            SQLite DB
 ```
 
 ## 💡 **Use Cases**

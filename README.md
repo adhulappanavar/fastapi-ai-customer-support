@@ -20,16 +20,24 @@ A production-ready customer support system that uses AI agents for intelligent t
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Customer      │    │   FastAPI        │    │   AI Agents     │
-│   Query        │───▶│   Backend        │───▶│   Workflow      │
+│   React UI      │    │   FastAPI        │    │   Agno AI       │
+│   (Frontend)    │◄──▶│   API Layer      │◄──▶│   Agents        │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
                                 │                        │
                                 ▼                        ▼
                        ┌──────────────────┐    ┌─────────────────┐
-                       │   Intelligent    │    │   Solution      │
-                       │   Caching        │    │   Generation    │
+                       │   Vector DB      │    │   Ticketing     │
+                       │   (LanceDB)      │    │   Database      │
                        └──────────────────┘    └─────────────────┘
 ```
+
+### **Layer Breakdown:**
+
+1. **🌐 React Frontend**: Modern web interface with Material-UI
+2. **🚀 FastAPI Backend**: RESTful API endpoints and business logic
+3. **🤖 Agno AI Layer**: Orchestrated AI agents for support resolution
+4. **💾 Vector Database**: LanceDB for semantic search and knowledge base
+5. **🎫 Ticketing System**: SQLite database for ticket management
 
 ## 🚀 **Quick Start**
 
@@ -70,15 +78,20 @@ cd ..
 # Start FastAPI backend (Terminal 1)
 python3 fastapi_demo.py
 
-# Start React UI (Terminal 2)
+# Start Ticketing API (Terminal 2)
+cd ticketing_tool
+python3 main.py
+
+# Start React UI (Terminal 3)
 cd react-web-ui
 npm start
 ```
 
-- **API**: http://localhost:7777
-- **Web UI**: http://localhost:3000
+- **Main API**: http://localhost:7777
+- **Ticketing API**: http://localhost:8000
+- **Frontend UI**: http://localhost:3000
 
-## 🌐 **Web Interface**
+## 🌐 **Frontend Interface**
 
 ### **React-Based UI**
 The system includes a modern React web interface with four main tabs:
@@ -94,13 +107,27 @@ The system includes a modern React web interface with four main tabs:
 - **File Upload**: Drag-and-drop PDF upload for knowledge base
 - **Modern UI**: Material-UI components with consistent design language
 
-## 📖 **API Documentation**
+## 🔌 **API Architecture**
 
-### **Interactive Docs**
-- **Swagger UI**: http://localhost:7777/docs
-- **ReDoc**: http://localhost:7777/redoc
+### **FastAPI Backend (Port 7777)**
+The main API server that orchestrates all operations:
 
-### **Main Endpoint**
+- **Agno AI Endpoints**: `/runs` - AI workflow execution
+- **Vector DB Operations**: Document processing and semantic search
+- **Business Logic**: Category classification, priority scoring, SLA management
+
+### **Ticketing API (Port 8000)**
+Separate service for ticket management:
+
+- **Ticket CRUD**: Create, read, update, delete tickets
+- **Status Management**: Track ticket lifecycle and status changes
+- **Database Operations**: SQLite-based persistence
+
+### **Interactive API Documentation**
+- **Main API**: http://localhost:7777/docs (Swagger UI)
+- **Ticketing API**: http://localhost:8000/docs (Swagger UI)
+
+### **Main AI Endpoint**
 ```
 POST /runs?workflow_id=customer-support-resolution-pipeline
 Content-Type: multipart/form-data
@@ -166,23 +193,29 @@ fastapi-ai-customer-support/
 ├── 📁 config/                    # Configuration files
 │   ├── categories.yaml           # Business categories and rules
 │   └── priority_rules.yaml       # Priority scoring algorithms
-├── 🐍 fastapi_demo.py            # Main FastAPI application
-├── 🐍 configurable_agents.py     # Data-driven AI agents
+├── 🐍 fastapi_demo.py            # Main FastAPI API server
+├── 🐍 configurable_agents.py     # Agno AI agents configuration
 ├── 🐍 test_workflow.py           # Testing and demonstration
+├── 🐍 rag_solution_developer.py  # RAG-powered solution generation
 ├── 📋 requirements.txt            # Python dependencies
 ├── 🛡️ .gitignore                 # Git ignore rules
 ├── 📖 README.md                   # This file
 ├── 📚 DATA_DRIVEN_SETUP.md       # Setup guide
 ├── 🔄 HARDCODED_VS_DATADRIVEN.md # Comparison document
 ├── 📊 solution_document.md        # System architecture
-├── 🌐 react-web-ui/              # React-based web interface
+├── 🌐 react-web-ui/              # React frontend application
 │   ├── src/components/           # UI components
 │   │   ├── HomeTab.tsx          # Home dashboard
 │   │   ├── ChatTab.tsx          # AI chat interface
 │   │   ├── TicketsTab.tsx       # Ticket management
 │   │   └── KnowledgeBaseTab.tsx # Knowledge base management
 │   └── package.json             # Node.js dependencies
-└── 📚 knowledge_base/            # PDF documents for AI training
+├── 🎫 ticketing_tool/            # Ticketing system backend
+│   ├── main.py                  # Ticketing API endpoints
+│   ├── database.py              # SQLite database operations
+│   └── requirements.txt         # Ticketing system dependencies
+├── 📚 knowledge_base/            # PDF documents for AI training
+└── 💾 tmp/                       # Temporary files and LanceDB storage
 ```
 
 ## 🎯 **Use Cases**

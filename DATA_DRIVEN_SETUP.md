@@ -20,9 +20,18 @@ cp env.example .env
 nano .env
 ```
 
-### **3. Start the Server**
+### **3. Start the Services**
 ```bash
+# Start main API server
 python3 fastapi_demo.py
+
+# Start ticketing API server (in new terminal)
+cd ticketing_tool
+python3 main.py
+
+# Start React frontend (in new terminal)
+cd react-web-ui
+npm start
 ```
 
 ## 📁 **Configuration Files**

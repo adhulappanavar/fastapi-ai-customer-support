@@ -22,29 +22,44 @@ Then reload:
 source ~/.bashrc  # or ~/.zshrc
 ```
 
-## 🧪 **Test the Workflow**
+## 🧪 **Test the System**
 
-### 1. **Start the Server** (in a new terminal with API key set)
+### 1. **Start the Main API Server** (Terminal 1)
 ```bash
 export OPENAI_API_KEY="your-key-here"
 python3 fastapi_demo.py
 ```
 
-### 2. **Test with curl**
+### 2. **Start the Ticketing API Server** (Terminal 2)
+```bash
+cd ticketing_tool
+python3 main.py
+```
+
+### 3. **Start the React Frontend** (Terminal 3)
+```bash
+cd react-web-ui
+npm start
+```
+
+### 4. **Test with curl**
 ```bash
 curl -X POST "http://localhost:7777/runs?workflow_id=customer-support-resolution-pipeline" \
   -F "workflow_input=I cannot log into my account"
 ```
 
-### 3. **Test with Python**
+### 5. **Test with Python**
 ```bash
 python3 test_workflow.py
 ```
 
-## 🌐 **API Endpoints**
+## 🌐 **System Endpoints**
 
-- **Server**: http://localhost:7777
+- **Main API Server**: http://localhost:7777
+- **Ticketing API Server**: http://localhost:8000
+- **React Frontend**: http://localhost:3000
 - **Interactive Docs**: http://localhost:7777/docs
+- **Ticketing Docs**: http://localhost:8000/docs
 - **Workflow Execution**: `POST /runs?workflow_id=customer-support-resolution-pipeline`
 
 ## 🎯 **What Happens When You Submit a Query**

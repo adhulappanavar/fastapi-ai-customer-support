@@ -10,15 +10,16 @@ This document describes the architecture and flow of a **RAG-powered AI customer
 
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Customer      │    │   FastAPI        │    │   Agno          │
-│   Support       │───▶│   Server         │───▶│   Workflow      │
-│   Query         │    │   (Port 7777)    │    │   Engine        │
+│   React UI      │    │   FastAPI        │    │   Agno          │
+│   (Frontend)    │◄──▶│   API Server     │◄──▶│   Workflow      │
+│   Port 3000     │    │   Port 7777      │    │   Engine        │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
                                 │                        │
                                 ▼                        ▼
                        ┌──────────────────┐    ┌─────────────────┐
-                       │   API Endpoint   │    │   AI Agents     │
-                       │   /runs          │    │   Pipeline      │
+                       │   Ticketing      │    │   AI Agents     │
+                       │   API Server     │    │   Pipeline      │
+                       │   Port 8000      │    │                 │
                        └──────────────────┘    └─────────────────┘
                                                         │
                                                         ▼
@@ -51,7 +52,10 @@ This document describes the architecture and flow of a **RAG-powered AI customer
 Start
   │
   ▼
-Customer submits support query
+User submits support query via React UI
+  │
+  ▼
+React UI sends request to FastAPI backend
   │
   ▼
 FastAPI receives request at /runs endpoint
@@ -77,7 +81,7 @@ RAG Solution Developer Agent generates solution
 Cache solution for future use
   │
   ▼
-Return AI-generated solution to customer
+Return AI-generated solution to React UI
   │
   ▼
 End
@@ -88,7 +92,7 @@ End
 ### Sequence Diagram
 
 ```
-Customer    FastAPI    Agno      Ticket      Solution    Cache
+React UI    FastAPI    Agno      Ticket      Solution    Cache
    │          │         │        Classifier   Developer    │
    │          │         │           │           │         │
    │──Query──▶│         │           │           │         │

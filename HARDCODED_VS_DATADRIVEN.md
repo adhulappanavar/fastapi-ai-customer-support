@@ -22,6 +22,8 @@ instructions = """
 - ❌ **Response Format**: Fixed structure
 - ❌ **Classification Rules**: No configurable criteria
 - ❌ **Business Logic**: Embedded in code
+- ❌ **Frontend Integration**: No web interface
+- ❌ **Ticketing System**: No separate ticketing API
 
 #### **2. Solution Developer Agent**
 ```python
