@@ -120,7 +120,7 @@ def customer_support_execution(workflow: Workflow, input_data) -> str:
     else:
         query = str(input_data)
     
-    log_info(f"🚀 === STARTING RAG PROCESSING ===")
+    log_info(f"🚀 === STARTING RAG-FIRST PROCESSING ===")
     log_info(f"📝 Query: {query}")
     
     cached_solution = workflow.workflow_session_state.get("solutions", {}).get(query)
@@ -130,16 +130,16 @@ def customer_support_execution(workflow: Workflow, input_data) -> str:
 
     log_info(f"🆕 No cached solution found, querying knowledge base...")
 
-    # Step 1: Query the vector database for relevant knowledge
-    log_info(f"🔍 Querying LanceDB vector database...")
+    # Step 1: Query the vector database for relevant knowledge (PRIMARY SOURCE)
+    log_info(f"🔍 Querying LanceDB vector database as PRIMARY source...")
     
     # Initialize variables outside try block
     search_results = []
     knowledge_context = ""
     
     try:
-        # Search for relevant documents in the knowledge base
-        search_results = vector_db.search(query, limit=3)
+        # Search for relevant documents in the knowledge base with higher limit for comprehensive coverage
+        search_results = vector_db.search(query, limit=5)
         log_info(f"📚 Found {len(search_results)} relevant documents in knowledge base")
         
         # Extract content from search results
@@ -147,46 +147,29 @@ def customer_support_execution(workflow: Workflow, input_data) -> str:
             for i, result in enumerate(search_results):
                 log_info(f"📄 Document {i+1}: {result.get('title', 'Untitled')} (Score: {result.get('score', 'N/A')})")
                 knowledge_context += f"\n--- Knowledge Base Document {i+1} ---\n{result.get('content', '')}\n"
+            
+            # If we have good knowledge base coverage, use it directly
+            if len(search_results) >= 2 or any(result.get('score', 0) > 0.7 for result in search_results):
+                log_info(f"✅ Strong knowledge base coverage found - generating RAG-first solution")
+                solution = generate_rag_first_solution(query, search_results, knowledge_context)
+            else:
+                log_info(f"⚠️ Limited knowledge base coverage - using AI agent with KB constraints")
+                solution = generate_ai_enhanced_solution(query, search_results, knowledge_context)
         else:
             log_info(f"⚠️ No relevant documents found in knowledge base")
             knowledge_context = "No specific knowledge base documents found for this query."
+            solution = generate_fallback_solution(query)
         
         log_info(f"📏 Knowledge context length: {len(knowledge_context)} characters")
         
     except Exception as e:
         log_info(f"❌ Error querying vector database: {e}")
         knowledge_context = "Error accessing knowledge base."
-        search_results = []  # Ensure it's an empty list on error
+        search_results = []
+        solution = generate_fallback_solution(query)
     
-    # Step 2: Classify the query
-    log_info(f"🏷️ Classifying query with AI agent...")
-    classification_response = triage_agent.run(query)
-    classification = classification_response.content
-    log_info(f"✅ Classification: {classification}")
-
-    # Step 3: Generate solution using knowledge base context
-    log_info(f"🤖 Generating solution using knowledge base context...")
-    solution_context = f"""
-    Customer Query: {query}
-
-    Classification: {classification}
-
-    Knowledge Base Context:
-    {knowledge_context}
-
-    Instructions:
-    Please provide a clear, step-by-step solution for this customer issue.
-    Make sure to format it in a customer-friendly way with clear instructions.
-    
-    IMPORTANT: Base your response on the knowledge base context provided above.
-    If the knowledge base contains relevant information, use it as the primary source.
-    If no relevant knowledge base documents are found, indicate this clearly.
-    
-    Always include a "Knowledge Source" section at the end showing which documents were referenced.
-    """
-
-    solution_response = support_agent.run(solution_context)
-    solution = solution_response.content
+    # Step 2: Solution generation is now handled by helper functions based on KB coverage
+    log_info(f"🔧 Solution generation strategy determined by knowledge base coverage")
     
     # Add knowledge base verification to the solution
     if search_results:
@@ -206,6 +189,104 @@ def customer_support_execution(workflow: Workflow, input_data) -> str:
     log_info(f"📊 Solution summary: {len(solution)} characters, {len(search_results) if search_results else 0} KB documents used")
 
     return solution
+
+
+def generate_rag_first_solution(query: str, search_results: list, knowledge_context: str) -> str:
+    """Generate solution primarily from knowledge base content with minimal AI processing"""
+    log_info(f"🔧 Generating RAG-first solution from knowledge base...")
+    
+    # Extract the most relevant content and structure it
+    primary_docs = []
+    for result in search_results:
+        if result.get('score', 0) > 0.5:  # Only use high-confidence matches
+            primary_docs.append({
+                'title': result.get('title', 'Untitled'),
+                'content': result.get('content', ''),
+                'score': result.get('score', 0)
+            })
+    
+    if not primary_docs:
+        primary_docs = search_results[:2]  # Fallback to first 2 results
+    
+    # Structure the solution directly from knowledge base
+    solution = f"# Solution for: {query}\n\n"
+    solution += "## Based on Knowledge Base Documents\n\n"
+    
+    for i, doc in enumerate(primary_docs):
+        solution += f"### From: {doc['title']}\n"
+        # Extract key steps and information from the document content
+        content_lines = doc['content'].split('\n')
+        step_count = 1
+        
+        for line in content_lines:
+            line = line.strip()
+            if line and len(line) > 10:  # Filter out very short lines
+                if any(keyword in line.lower() for keyword in ['step', 'solution', 'fix', 'resolve', 'troubleshoot']):
+                    solution += f"{step_count}. {line}\n"
+                    step_count += 1
+                elif line.startswith('-') or line.startswith('•'):
+                    solution += f"{step_count}. {line[1:].strip()}\n"
+                    step_count += 1
+                elif len(line) > 50:  # Longer descriptive lines
+                    solution += f"{step_count}. {line}\n"
+                    step_count += 1
+        
+        solution += "\n"
+    
+    solution += "## Verification Steps\n"
+    solution += "1. Follow the steps above in order\n"
+    solution += "2. Test the solution to confirm it resolves the issue\n"
+    solution += "3. If the issue persists, check for additional error messages\n\n"
+    
+    solution += "## Knowledge Source\n"
+    solution += f"This solution is directly derived from {len(primary_docs)} knowledge base documents with relevance scores above 0.5."
+    
+    return solution
+
+
+def generate_ai_enhanced_solution(query: str, search_results: list, knowledge_context: str) -> str:
+    """Generate solution using AI agent but heavily constrained by knowledge base content"""
+    log_info(f"🤖 Generating AI-enhanced solution with KB constraints...")
+    
+    # Use AI agent but with strict instructions to prioritize KB content
+    solution_context = f"""
+    Customer Query: {query}
+
+    KNOWLEDGE BASE CONTENT (PRIMARY SOURCE):
+    {knowledge_context}
+
+    CRITICAL INSTRUCTIONS:
+    1. Your response MUST be based PRIMARILY on the knowledge base content above
+    2. Do NOT provide generic AI solutions unless the KB content is insufficient
+    3. If KB content exists, use it as the foundation and only enhance with formatting
+    4. Structure the response as: Problem Analysis → Solution Steps → Verification → Prevention
+    5. Reference specific KB documents and their relevance scores
+    6. If KB content is missing critical information, clearly indicate what's missing
+    """
+
+    solution_response = support_agent.run(solution_context)
+    return solution_response.content
+
+
+def generate_fallback_solution(query: str) -> str:
+    """Generate fallback solution when no KB content is available"""
+    log_info(f"⚠️ Generating fallback solution - no KB content available")
+    
+    fallback_context = f"""
+    Customer Query: {query}
+
+    IMPORTANT: No relevant knowledge base documents were found for this query.
+    
+    INSTRUCTIONS:
+    1. Provide a general troubleshooting approach
+    2. Suggest contacting support for specific guidance
+    3. Offer basic diagnostic steps
+    4. Clearly indicate this is NOT from the knowledge base
+    5. Recommend uploading relevant documentation to improve future responses
+    """
+
+    solution_response = support_agent.run(fallback_context)
+    return solution_response.content
 
 
 # Create the customer support workflow
