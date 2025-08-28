@@ -1,0 +1,175 @@
+# Priority Scoring Rules Configuration
+# This file defines how query priority is determined based on content analysis
+
+priority_levels:
+  urgent:
+    description: "Critical issues requiring immediate attention"
+    score_range: [90, 100]
+    sla_hours: 1
+    auto_escalate: true
+    indicators:
+      - "system down"
+      - "crash"
+      - "broken"
+      - "urgent"
+      - "asap"
+      - "emergency"
+      - "cannot access"
+      - "data loss"
+      - "security breach"
+      - "payment failed"
+      - "locked out"
+      - "blocked"
+    keywords_weight: 1.0
+    emotional_indicators:
+      - "frustrated"
+      - "angry"
+      - "desperate"
+      - "helpless"
+    time_indicators:
+      - "now"
+      - "immediately"
+      - "right away"
+      - "as soon as possible"
+
+  high:
+    description: "Important issues requiring prompt attention"
+    score_range: [70, 89]
+    sla_hours: 4
+    auto_escalate: true
+    indicators:
+      - "cannot login"
+      - "billing error"
+      - "subscription issue"
+      - "important"
+      - "blocked"
+      - "locked out"
+      - "critical"
+      - "major issue"
+      - "not working"
+      - "broken"
+      - "error"
+      - "problem"
+    keywords_weight: 0.8
+    emotional_indicators:
+      - "concerned"
+      - "worried"
+      - "stressed"
+      - "annoyed"
+    time_indicators:
+      - "soon"
+      - "quickly"
+      - "promptly"
+      - "asap"
+
+  medium:
+    description: "Standard issues requiring normal attention"
+    score_range: [40, 69]
+    sla_hours: 24
+    auto_escalate: false
+    indicators:
+      - "help needed"
+      - "question"
+      - "setup"
+      - "configuration"
+      - "how to"
+      - "feature request"
+      - "improvement"
+      - "suggestion"
+      - "guide"
+      - "tutorial"
+      - "learn"
+      - "understand"
+    keywords_weight: 0.6
+    emotional_indicators:
+      - "curious"
+      - "interested"
+      - "confused"
+      - "unsure"
+    time_indicators:
+      - "when convenient"
+      - "no rush"
+      - "take your time"
+      - "when possible"
+
+  low:
+    description: "Minor issues or general inquiries"
+    score_range: [0, 39]
+    sla_hours: 72
+    auto_escalate: false
+    indicators:
+      - "information"
+      - "general"
+      - "curiosity"
+      - "learning"
+      - "documentation"
+      - "tutorial"
+      - "guide"
+      - "example"
+      - "just wondering"
+      - "out of curiosity"
+      - "for future reference"
+      - "planning ahead"
+    keywords_weight: 0.4
+    emotional_indicators:
+      - "calm"
+      - "patient"
+      - "relaxed"
+      - "curious"
+    time_indicators:
+      - "no hurry"
+      - "whenever"
+      - "take your time"
+      - "no rush"
+
+# Priority scoring algorithm
+scoring_algorithm:
+  base_score: 50  # Starting point for all queries
+  
+  # Multipliers for different factors
+  multipliers:
+    keywords: 1.0      # Matched priority indicators
+    emotional_tone: 0.8  # Customer emotional state
+    time_urgency: 0.9    # Time-based urgency indicators
+    category_weight: 0.7 # Category-specific priority weight
+    user_tier: 0.6      # Customer tier/plan level
+    
+  # Bonus points for specific combinations
+  bonus_points:
+    urgent_keywords: 20
+    emotional_urgency: 15
+    time_urgency: 10
+    category_escalation: 25
+    
+  # Penalty points for certain factors
+  penalty_points:
+    low_priority_keywords: -15
+    calm_emotional_tone: -10
+    no_time_urgency: -5
+    low_category_weight: -20
+
+# Escalation rules
+escalation_rules:
+  urgent:
+    immediate: true
+    notify_managers: true
+    phone_call: true
+    max_wait_time: "30 minutes"
+    
+  high:
+    immediate: false
+    notify_managers: true
+    phone_call: false
+    max_wait_time: "2 hours"
+    
+  medium:
+    immediate: false
+    notify_managers: false
+    phone_call: false
+    max_wait_time: "24 hours"
+    
+  low:
+    immediate: false
+    notify_managers: false
+    phone_call: false
+    max_wait_time: "72 hours"

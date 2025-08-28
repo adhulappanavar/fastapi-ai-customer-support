@@ -1,0 +1,143 @@
+# Customer Support Categories Configuration
+# This file defines how queries are classified and prioritized
+
+categories:
+  billing:
+    description: "Payment, subscription, and billing issues"
+    keywords: 
+      - "payment"
+      - "billing" 
+      - "subscription"
+      - "charge"
+      - "refund"
+      - "invoice"
+      - "credit card"
+      - "debit"
+      - "overcharge"
+      - "double charge"
+    priority_weight: 0.8
+    auto_escalate: true
+    sla_hours: 4
+    team: "billing_support"
+    escalation_threshold: 0.7
+
+  technical:
+    description: "System errors, crashes, and technical problems"
+    keywords:
+      - "error"
+      - "crash"
+      - "bug"
+      - "broken"
+      - "not working"
+      - "issue"
+      - "problem"
+      - "failure"
+      - "down"
+      - "slow"
+    priority_weight: 0.9
+    auto_escalate: true
+    sla_hours: 2
+    team: "technical_support"
+    escalation_threshold: 0.6
+
+  account_access:
+    description: "Login, authentication, and account access issues"
+    keywords:
+      - "login"
+      - "password"
+      - "authentication"
+      - "access"
+      - "locked"
+      - "2fa"
+      - "mfa"
+      - "sign in"
+      - "account"
+      - "permission"
+    priority_weight: 0.85
+    auto_escalate: true
+    sla_hours: 1
+    team: "account_support"
+    escalation_threshold: 0.5
+
+  product_info:
+    description: "How-to questions and feature information"
+    keywords:
+      - "how to"
+      - "feature"
+      - "setup"
+      - "configure"
+      - "guide"
+      - "help"
+      - "tutorial"
+      - "documentation"
+      - "learn"
+      - "understand"
+    priority_weight: 0.4
+    auto_escalate: false
+    sla_hours: 24
+    team: "product_support"
+    escalation_threshold: 0.8
+
+  bug_report:
+    description: "Specific bug reports and unexpected behavior"
+    keywords:
+      - "bug"
+      - "unexpected"
+      - "wrong"
+      - "incorrect"
+      - "problem"
+      - "issue"
+      - "glitch"
+      - "fault"
+      - "defect"
+      - "malfunction"
+    priority_weight: 0.7
+    auto_escalate: false
+    sla_hours: 8
+    team: "engineering"
+    escalation_threshold: 0.7
+
+  feature_request:
+    description: "Requests for new features or improvements"
+    keywords:
+      - "request"
+      - "feature"
+      - "improvement"
+      - "enhancement"
+      - "new"
+      - "add"
+      - "suggestion"
+      - "idea"
+      - "wish"
+      - "could you"
+    priority_weight: 0.3
+    auto_escalate: false
+    sla_hours: 48
+    team: "product_management"
+    escalation_threshold: 0.9
+
+# Category relationships and dependencies
+relationships:
+  billing:
+    related_to: ["account_access", "technical"]
+    conflicts_with: []
+    
+  technical:
+    related_to: ["account_access", "bug_report"]
+    conflicts_with: ["product_info"]
+    
+  account_access:
+    related_to: ["billing", "technical"]
+    conflicts_with: []
+    
+  product_info:
+    related_to: ["feature_request"]
+    conflicts_with: ["technical", "bug_report"]
+    
+  bug_report:
+    related_to: ["technical"]
+    conflicts_with: ["product_info"]
+    
+  feature_request:
+    related_to: ["product_info"]
+    conflicts_with: ["bug_report", "technical"]
