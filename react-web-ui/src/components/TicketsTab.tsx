@@ -24,7 +24,8 @@ import {
 import { 
   Search as SearchIcon, 
   Refresh as RefreshIcon,
-  Visibility as ViewIcon 
+  Visibility as ViewIcon,
+  SmartToy as AiIcon
 } from '@mui/icons-material';
 
 interface Ticket {
@@ -40,11 +41,19 @@ interface Ticket {
   tags?: string;
 }
 
+interface AiResolution {
+  ticketId: number;
+  response: string;
+  loading: boolean;
+  error: string | null;
+}
+
 const TicketsTab: React.FC = () => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [aiResolutions, setAiResolutions] = useState<AiResolution[]>([]);
   
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -132,6 +141,64 @@ const TicketsTab: React.FC = () => {
   const handleViewTicket = (ticket: Ticket) => {
     console.log('Viewing ticket:', ticket);
     // This could open a modal or navigate to ticket details
+  };
+
+  const handleAiResolution = async (ticket: Ticket) => {
+    // Check if we already have a resolution for this ticket
+    const existingResolution = aiResolutions.find(r => r.ticketId === ticket.id);
+    if (existingResolution) {
+      return; // Already resolved
+    }
+
+    // Add loading state for this ticket
+    setAiResolutions(prev => [...prev, {
+      ticketId: ticket.id,
+      response: '',
+      loading: true,
+      error: null
+    }]);
+
+    try {
+      // Prepare the query for AI analysis
+      const query = `Ticket: ${ticket.title}\n\nDescription: ${ticket.description}\n\nCategory: ${ticket.category_name}\nPriority: ${ticket.priority_name}\n\nPlease provide a comprehensive solution for this support ticket.`;
+
+      const response = await fetch('http://localhost:7777/runs?workflow_id=customer-support-resolution-pipeline', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        body: (() => {
+          const formData = new FormData();
+          formData.append('workflow_input', query);
+          return formData;
+        })(),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        const aiResponse = result.content || result.output || 'AI response received but no content available.';
+        
+        // Update the resolution with the response
+        setAiResolutions(prev => prev.map(r => 
+          r.ticketId === ticket.id 
+            ? { ...r, response: aiResponse, loading: false, error: null }
+            : r
+        ));
+      } else {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+    } catch (err) {
+      console.error('Error getting AI resolution:', err);
+      setAiResolutions(prev => prev.map(r => 
+        r.ticketId === ticket.id 
+          ? { ...r, loading: false, error: 'Failed to get AI resolution' }
+          : r
+      ));
+    }
+  };
+
+  const getAiResolution = (ticketId: number) => {
+    return aiResolutions.find(r => r.ticketId === ticketId);
   };
 
   if (loading) {
@@ -250,58 +317,128 @@ const TicketsTab: React.FC = () => {
           </TableHead>
           <TableBody>
             {filteredTickets.map((ticket) => (
-              <TableRow key={ticket.id} hover>
-                <TableCell>
-                  <Typography variant="body2" fontWeight="bold">
-                    {ticket.ticket_number}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Box>
-                    <Typography variant="body2" fontWeight="medium">
-                      {ticket.title}
+              <React.Fragment key={ticket.id}>
+                <TableRow hover>
+                  <TableCell>
+                    <Typography variant="body2" fontWeight="bold">
+                      {ticket.ticket_number}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ 
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden'
-                    }}>
-                      {ticket.description}
+                  </TableCell>
+                  <TableCell>
+                    <Box>
+                      <Typography variant="body2" fontWeight="medium">
+                        {ticket.title}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ 
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden'
+                      }}>
+                        {ticket.description}
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell>{ticket.user_full_name}</TableCell>
+                  <TableCell>{ticket.category_name}</TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={ticket.priority_name} 
+                      color={getPriorityColor(ticket.priority_name) as any}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={ticket.status_name} 
+                      color={getStatusColor(ticket.status_name) as any}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="caption">
+                      {new Date(ticket.created_at).toLocaleDateString()}
                     </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>{ticket.user_full_name}</TableCell>
-                <TableCell>{ticket.category_name}</TableCell>
-                <TableCell>
-                  <Chip 
-                    label={ticket.priority_name} 
-                    color={getPriorityColor(ticket.priority_name) as any}
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell>
-                  <Chip 
-                    label={ticket.status_name} 
-                    color={getStatusColor(ticket.status_name) as any}
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell>
-                  <Typography variant="caption">
-                    {new Date(ticket.created_at).toLocaleDateString()}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <IconButton 
-                    size="small" 
-                    onClick={() => handleViewTicket(ticket)}
-                    color="primary"
-                  >
-                    <ViewIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
+                  </TableCell>
+                  <TableCell>
+                    <Box display="flex" gap={1}>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleViewTicket(ticket)}
+                        color="primary"
+                        title="View Ticket Details"
+                      >
+                        <ViewIcon />
+                      </IconButton>
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleAiResolution(ticket)}
+                        color="secondary"
+                        title="Get AI Resolution"
+                        disabled={getAiResolution(ticket.id)?.loading || !!getAiResolution(ticket.id)?.response}
+                      >
+                        {getAiResolution(ticket.id)?.loading ? (
+                          <CircularProgress size={16} />
+                        ) : (
+                          <AiIcon />
+                        )}
+                      </IconButton>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+                
+                {/* AI Resolution Row */}
+                {getAiResolution(ticket.id) && (
+                  <TableRow>
+                    <TableCell colSpan={8} sx={{ p: 0 }}>
+                      <Box sx={{ p: 2, bgcolor: 'grey.50', borderTop: '1px solid', borderColor: 'grey.200' }}>
+                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                          <Typography variant="subtitle2" color="primary" display="flex" alignItems="center" gap={1}>
+                            <AiIcon fontSize="small" />
+                            AI Resolution
+                          </Typography>
+                          {getAiResolution(ticket.id)?.error && (
+                            <Chip 
+                              label="Error" 
+                              color="error" 
+                              size="small" 
+                              variant="outlined"
+                            />
+                          )}
+                        </Box>
+                        
+                        {getAiResolution(ticket.id)?.loading && (
+                          <Box display="flex" alignItems="center" gap={1}>
+                            <CircularProgress size={16} />
+                            <Typography variant="body2" color="text.secondary">
+                              Getting AI resolution...
+                            </Typography>
+                          </Box>
+                        )}
+                        
+                        {getAiResolution(ticket.id)?.error && (
+                          <Alert severity="error" sx={{ mb: 1 }}>
+                            {getAiResolution(ticket.id)?.error}
+                          </Alert>
+                        )}
+                        
+                        {getAiResolution(ticket.id)?.response && (
+                          <Box>
+                            <Typography variant="body2" component="div" sx={{ 
+                              whiteSpace: 'pre-wrap',
+                              fontFamily: 'monospace',
+                              fontSize: '0.875rem',
+                              lineHeight: 1.5
+                            }}>
+                              {getAiResolution(ticket.id)?.response}
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </React.Fragment>
             ))}
           </TableBody>
         </Table>
